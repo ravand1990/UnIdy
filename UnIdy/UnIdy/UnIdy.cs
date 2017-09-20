@@ -82,19 +82,19 @@ namespace UnIdy
             foreach (var item in playerInventoryItems)
             {
                 var itemMods = item.Item.GetComponent<Mods>();
-                if (!itemMods.Identified
+
+                LogMessage(item.Item.GetComponent<Map>().Tier,1);
+
+                if (itemMods.Identified
                     &&
                     (
-                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && item.Item.GetComponent<Map>() == null
+                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && item.Item.GetComponent<Map>().Tier == 0
                         ||
-                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic &&
-                        item.Item.GetComponent<Map>() == null
+                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && item.Item.GetComponent<Map>().Tier == 0
                         ||
-                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique &&
-                        item.Item.GetComponent<Map>() == null
+                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && item.Item.GetComponent<Map>().Tier == 0
                         ||
-                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal &&
-                        item.Item.GetComponent<Map>() != null
+                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && item.Item.GetComponent<Map>().Tier != 0
                     )
                 )
                 {
