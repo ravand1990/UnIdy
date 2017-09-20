@@ -1,0 +1,8 @@
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.csprojResolveAssemblyReference.cache
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.Properties.Resources.resources
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.csproj.GenerateResource.Cache
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.csproj.CoreCompileInputs.cache
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.dll
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy\UnIdy\obj\Debug\UnIdy.pdb
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy.dll
+C:\Users\Ravand\Desktop\PoEHUD-x64\plugins\UnIdy\UnIdy.pdb
