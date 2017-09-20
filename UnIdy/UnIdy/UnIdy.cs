@@ -82,9 +82,6 @@ namespace UnIdy
             foreach (var item in playerInventoryItems)
             {
                 var itemMods = item.Item.GetComponent<Mods>();
-
-                LogMessage(item.Item.GetComponent<Map>().Tier,1);
-
                 if (!itemMods.Identified
                     &&
                     (
