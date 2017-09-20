@@ -85,7 +85,7 @@ namespace UnIdy
 
                 LogMessage(item.Item.GetComponent<Map>().Tier,1);
 
-                if (itemMods.Identified
+                if (!itemMods.Identified
                     &&
                     (
                         Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && item.Item.GetComponent<Map>().Tier == 0
