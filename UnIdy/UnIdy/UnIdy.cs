@@ -1,25 +1,24 @@
-﻿using PoeHUD.Models;
-using PoeHUD.Plugins;
+﻿using System.Threading;
+using System.Windows.Forms;
 using PoeHUD.Framework;
+using PoeHUD.Models;
 using PoeHUD.Models.Enums;
+using PoeHUD.Plugins;
 using PoeHUD.Poe.Components;
-using PoeHUD.Poe.Elements;
 using PoeHUD.Poe.RemoteMemoryObjects;
 using SharpDX;
-using System.Threading;
 using UnIdy.Utils;
-using System.Windows.Forms;
 
 namespace UnIdy
 {
-    class UnIdy:BaseSettingsPlugin<Settings>
+    internal class UnIdy : BaseSettingsPlugin<Settings>
     {
+        private readonly IngameState ingameState;
+        private bool isBusy;
         private Inventory playerInventory;
-        private IngameState ingameState;
-        private bool isBusy = false;
+
         public UnIdy()
         {
-
             ingameState = GameController.Game.IngameState;
             PluginName = "UnIdy";
         }
@@ -32,9 +31,7 @@ namespace UnIdy
         public override void Render()
         {
             if (!Settings.Enable)
-            {
                 return;
-            }
 
 
             debug();
@@ -66,59 +63,64 @@ namespace UnIdy
         {
             if (!ingameState.IngameUi.InventoryPanel.IsVisible)
             {
-                LogMessage("Open your player inventory first!",5);
+                LogMessage("Open your player inventory first!", 5);
                 return;
             }
 
             playerInventory = ingameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory];
             var playerInventoryItems = playerInventory.VisibleInventoryItems;
-            Vector2 scrollPosition = getScrollsPosition();
+
+            var prevMousePosition = Mouse.GetCursorPosition();
+            var scrollPosition = getScrollsPosition();
+
 
             Mouse.moveMouse(scrollPosition);
 
 
-            Keyboard.HoldKey((byte)Keys.ShiftKey);
+            Keyboard.HoldKey((byte) Keys.ShiftKey);
             Mouse.RightUp(Settings.Speed);
-            foreach (NormalInventoryItem item in playerInventoryItems)
+            foreach (var item in playerInventoryItems)
             {
-                Mods itemMods = item.Item.GetComponent<Mods>();
-                if (!itemMods.Identified 
-                    && 
+                var itemMods = item.Item.GetComponent<Mods>();
+                if (!itemMods.Identified
+                    &&
                     (
-                    (Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare) 
-                    || 
-                    (Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic)
-                    ||
-                    (Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique)
+                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && item.Item.GetComponent<Map>() == null
+                        ||
+                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic &&
+                        item.Item.GetComponent<Map>() == null
+                        ||
+                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique &&
+                        item.Item.GetComponent<Map>() == null
+                        ||
+                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal &&
+                        item.Item.GetComponent<Map>() != null
                     )
-                    )
+                )
                 {
                     var itemPosition = item.GetClientRect().Center;
-                    identifyItem(scrollPosition,itemPosition);
+                    identifyItem(scrollPosition, itemPosition);
                 }
             }
-            Keyboard.ReleaseKey((byte)Keys.ShiftKey);
-
+            Keyboard.ReleaseKey((byte) Keys.ShiftKey);
+            Mouse.moveMouse(prevMousePosition);
         }
 
         private Vector2 getScrollsPosition()
         {
             playerInventory = ingameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory];
             var playerInventoryItems = playerInventory.VisibleInventoryItems;
-            foreach (NormalInventoryItem item in playerInventoryItems)
+            foreach (var item in playerInventoryItems)
             {
-                Mods itemMods = item.Item.GetComponent<Mods>();
-                if (item.Item.Path.Contains("CurrencyIdentification")) { 
-                return item.GetClientRect().Center;
-                }
+                var itemMods = item.Item.GetComponent<Mods>();
+                if (item.Item.Path.Contains("CurrencyIdentification")) return item.GetClientRect().Center;
             }
-            return new Vector2(0,0);
+            return new Vector2(0, 0);
         }
-        private void identifyItem(Vector2 scrollPosition,Vector2 itemPosition)
+
+        private void identifyItem(Vector2 scrollPosition, Vector2 itemPosition)
         {
             Thread.Sleep(Mouse.DELAY_MOVE);
-            //Mouse.moveMouse(scrollPosition);
-            //Mouse.RightUp(Settings.Speed);
             Mouse.moveMouse(itemPosition);
             Mouse.LeftUp(Settings.Speed);
             Thread.Sleep(Mouse.DELAY_MOVE);
@@ -127,24 +129,14 @@ namespace UnIdy
         private void debug()
         {
             if (!Settings.Debug)
-            {
                 return;
-            }
-            //LogMessage(GameController.Game.IngameState.IngameUi.InventoryPanel.Children[0].GetClientRect(), 1);
-
-
-            //LogMessage(ingameState.CurentUIElementPosX, 2);
-
-            RectangleF uihover = ingameState.UIHover.GetClientRect();
-
-
+            var uihover = ingameState.UIHover.GetClientRect();
             Graphics.DrawFrame(uihover, 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.GetClientRect(), 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-
 
             /**
             int i = 0;
@@ -160,6 +152,5 @@ namespace UnIdy
             i = 0;
             */
         }
-
     }
 }

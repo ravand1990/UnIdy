@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using PoeHUD.Plugins;
+﻿using System.Windows.Forms;
 using PoeHUD.Hud.Settings;
-using System.Windows.Forms;
+using PoeHUD.Plugins;
+
 namespace UnIdy
 {
-    class Settings:SettingsBase
+    internal class Settings : SettingsBase
     {
         public Settings()
         {
@@ -15,23 +15,30 @@ namespace UnIdy
             Magic = true;
             Rare = true;
             Unique = true;
+            Map = false;
             Debug = false;
-
         }
+
         [Menu("Hotkey")]
         public HotkeyNode HotKey { get; set; }
+
         [Menu("Speed")]
         public RangeNode<int> Speed { get; set; }
 
-        [Menu("Identify What?",1000)]
+        [Menu("Identify What?", 1000)]
         public ToggleNode Identification { get; set; }
 
-        [Menu("Magic", 1001,1000)]
+        [Menu("Magic", 1001, 1000)]
         public ToggleNode Magic { get; set; }
-        [Menu("Rare", 1002,1000)]
+
+        [Menu("Rare", 1002, 1000)]
         public ToggleNode Rare { get; set; }
-        [Menu("Unique", 1003,1000)]
+
+        [Menu("Unique", 1003, 1000)]
         public ToggleNode Unique { get; set; }
+
+        [Menu("Map", 1004, 1000)]
+        public ToggleNode Map { get; set; }
 
         [Menu("Debug")]
         public ToggleNode Debug { get; set; }

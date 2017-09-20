@@ -1,23 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using SharpDX;
+﻿using System.Runtime.InteropServices;
 using System.Threading;
-using PoeHUD.Plugins;
-
-
+using SharpDX;
 
 namespace UnIdy.Utils
 {
-    class Mouse {
+    internal class Mouse
+    {
         public const int DELAY_MOVE = 20;
         public const int DELAY_CLICK = 5;
 
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out Point lpPoint);
+
+        public static Point GetCursorPosition()
+        {
+            Point lpPoint;
+            GetCursorPos(out lpPoint);
+
+            return lpPoint;
+        }
 
         [DllImport("user32.dll")]
         private static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
@@ -32,40 +36,37 @@ namespace UnIdy.Utils
             Absolute = 0x00008000,
             RightDown = 0x00000008,
             RightUp = 0x00000010
-        
         }
 
 
         public static void moveMouse(Vector2 pos)
         {
-            SetCursorPos((int) pos.X,(int)pos.Y);
+            SetCursorPos((int) pos.X, (int) pos.Y);
             Thread.Sleep(DELAY_MOVE);
         }
 
         public static void LeftDown(int delay)
         {
-            mouse_event((int)MouseEvents.LeftDown, 0, 0, 0, 0);
+            mouse_event((int) MouseEvents.LeftDown, 0, 0, 0, 0);
             Thread.Sleep(DELAY_CLICK + delay);
         }
 
         public static void LeftUp(int delay)
         {
-            mouse_event((int)MouseEvents.LeftUp, 0, 0, 0, 0);
+            mouse_event((int) MouseEvents.LeftUp, 0, 0, 0, 0);
             Thread.Sleep(DELAY_CLICK + delay);
-
         }
 
         public static void RightDown(int delay)
         {
-            mouse_event((int)MouseEvents.RightDown, 0, 0, 0, 0);
+            mouse_event((int) MouseEvents.RightDown, 0, 0, 0, 0);
             Thread.Sleep(DELAY_CLICK + delay);
         }
 
         public static void RightUp(int delay)
         {
-            mouse_event((int)MouseEvents.RightUp, 0, 0, 0, 0);
+            mouse_event((int) MouseEvents.RightUp, 0, 0, 0, 0);
             Thread.Sleep(DELAY_CLICK + delay);
         }
-
     }
 }
