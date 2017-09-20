@@ -36,6 +36,9 @@ namespace UnIdy
                 return;
             }
 
+
+            debug();
+
             if (WinApi.IsKeyDown(Settings.HotKey) && !isBusy)
             {
                 isBusy = true;
@@ -120,5 +123,43 @@ namespace UnIdy
             Mouse.LeftUp(Settings.Speed);
             Thread.Sleep(Mouse.DELAY_MOVE);
         }
+
+        private void debug()
+        {
+            if (!Settings.Debug)
+            {
+                return;
+            }
+            //LogMessage(GameController.Game.IngameState.IngameUi.InventoryPanel.Children[0].GetClientRect(), 1);
+
+
+            //LogMessage(ingameState.CurentUIElementPosX, 2);
+
+            RectangleF uihover = ingameState.UIHover.GetClientRect();
+
+
+            Graphics.DrawFrame(uihover, 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
+
+
+            /**
+            int i = 0;
+            foreach (var ui in ingameState.IngameUi.InventoryPanel.Children)
+            {
+                if (ui.IsVisible)
+                {
+                    Graphics.DrawFrame(ui.GetClientRect(), 2, Color.Red);
+                    Graphics.DrawText(i.ToString(), 24, ui.GetClientRect().Center);
+                }
+                i++;
+            }
+            i = 0;
+            */
+        }
+
     }
 }

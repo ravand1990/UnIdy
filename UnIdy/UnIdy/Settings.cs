@@ -11,12 +11,12 @@ namespace UnIdy
             Enable = true;
             HotKey = Keys.F2;
             Speed = new RangeNode<int>(20, 0, 100);
-
-
             Identification = true;
             Magic = true;
             Rare = true;
             Unique = true;
+            Debug = false;
+
         }
         [Menu("Hotkey")]
         public HotkeyNode HotKey { get; set; }
@@ -33,5 +33,7 @@ namespace UnIdy
         [Menu("Unique", 1003,1000)]
         public ToggleNode Unique { get; set; }
 
+        [Menu("Debug")]
+        public ToggleNode Debug { get; set; }
     }
 }
