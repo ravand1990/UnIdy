@@ -1,2 +1,4 @@
 UnIdy export-ignore
 UnIdy/* export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
