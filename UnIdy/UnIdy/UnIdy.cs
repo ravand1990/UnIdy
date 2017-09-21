@@ -1,12 +1,14 @@
 ﻿using System.Threading;
 using System.Windows.Forms;
 using PoeHUD.Framework;
+using PoeHUD.Framework.Helpers;
 using PoeHUD.Models;
 using PoeHUD.Models.Enums;
 using PoeHUD.Plugins;
 using PoeHUD.Poe.Components;
 using PoeHUD.Poe.RemoteMemoryObjects;
 using SharpDX;
+using SharpDX.Direct3D9;
 using UnIdy.Utils;
 
 namespace UnIdy
@@ -128,16 +130,28 @@ namespace UnIdy
             if (!Settings.Debug)
                 return;
             var uihover = ingameState.UIHover.GetClientRect();
+
             Graphics.DrawFrame(uihover, 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.GetClientRect(), 2, Color.Green);
             Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
+            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
+           
             /**
+            foreach (var gameControllerEntity in GameController.Entities)
+            {
+
+                Vector3 playerPos = GameController.Player.Pos;
+                Vector3 entityPos = gameControllerEntity.Pos;
+
+                Vector2 distance = (Vector2) entityPos - (Vector2) playerPos;
+                Vector2 center = GameController.Window.GetWindowRectangle().Center;
+                Graphics.DrawText(gameControllerEntity.Path, 20, Vector2.Add(distance,center),FontDrawFlags.Center);
+            }
+
             int i = 0;
-            foreach (var ui in ingameState.IngameUi.InventoryPanel.Children)
+            foreach (var ui in ingameState.UIRoot.Children)
             {
                 if (ui.IsVisible)
                 {
