@@ -1,11 +1,15 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Windows.Forms;
 using PoeHUD.Framework;
 using PoeHUD.Framework.Helpers;
 using PoeHUD.Models;
 using PoeHUD.Models.Enums;
 using PoeHUD.Plugins;
+using PoeHUD.Poe;
 using PoeHUD.Poe.Components;
+using PoeHUD.Poe.EntityComponents;
+using PoeHUD.Poe.FilesInMemory;
 using PoeHUD.Poe.RemoteMemoryObjects;
 using SharpDX;
 using SharpDX.Direct3D9;
@@ -84,16 +88,18 @@ namespace UnIdy
             foreach (var item in playerInventoryItems)
             {
                 var itemMods = item.Item.GetComponent<Mods>();
+                var itemBase = GameController.Files.BaseItemTypes.Translate(item.Item.Path);
+
                 if (!itemMods.Identified
                     &&
                     (
-                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && item.Item.GetComponent<Map>().Tier == 0
+                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && !itemBase.ClassName.Equals("Map")
                         ||
-                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && item.Item.GetComponent<Map>().Tier == 0
+                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && !itemBase.ClassName.Equals("Map")
                         ||
-                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && item.Item.GetComponent<Map>().Tier == 0
+                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && !itemBase.ClassName.Equals("Map")
                         ||
-                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && item.Item.GetComponent<Map>().Tier != 0
+                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && itemBase.ClassName.Equals("Map")
                     )
                 )
                 {
@@ -111,8 +117,11 @@ namespace UnIdy
             var playerInventoryItems = playerInventory.VisibleInventoryItems;
             foreach (var item in playerInventoryItems)
             {
-                var itemMods = item.Item.GetComponent<Mods>();
-                if (item.Item.Path.Contains("CurrencyIdentification")) return item.GetClientRect().Center;
+                var itemBase = item.Item.GetComponent<Base>();
+                if (itemBase.Name.Equals("Scroll of Wisdom"))
+                {
+                    return item.GetClientRect().Center;
+                }
             }
             return new Vector2(0, 0);
         }
