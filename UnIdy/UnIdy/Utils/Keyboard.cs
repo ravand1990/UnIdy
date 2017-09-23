@@ -20,6 +20,12 @@ namespace UnIdy.Utils
             keybd_event(key, 0, (int) KeyboardEvents.KEY_DOWN | (int) KeyboardEvents.KEY_UP, 0);
         }
 
+        public static void PressKey(byte key)
+        {
+            HoldKey(key);
+            ReleaseKey(key);
+        }
+
         public enum KeyboardEvents
         {
             KEY_DOWN = 0x0001,

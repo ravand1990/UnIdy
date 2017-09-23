@@ -17,6 +17,7 @@ namespace UnIdy
             Unique = true;
             Map = false;
             Debug = false;
+            openInventory = true;
         }
 
         [Menu("Hotkey")]
@@ -39,6 +40,9 @@ namespace UnIdy
 
         [Menu("Map", 1004, 1000)]
         public ToggleNode Map { get; set; }
+
+        [Menu("Open Inventory?")]
+        public ToggleNode openInventory { get; set; }
 
         [Menu("Debug")]
         public ToggleNode Debug { get; set; }

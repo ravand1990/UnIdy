@@ -69,8 +69,15 @@ namespace UnIdy
         {
             if (!ingameState.IngameUi.InventoryPanel.IsVisible)
             {
+                if (!Settings.openInventory) { 
                 LogMessage("Open your player inventory first!", 5);
                 return;
+                }
+                else
+                {
+                    Keyboard.PressKey((byte)Keys.I);
+                    Thread.Sleep(Mouse.DELAY_CLICK);
+                }
             }
 
             playerInventory = ingameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory];
