@@ -94,23 +94,28 @@ namespace UnIdy
             Mouse.RightUp(Settings.Speed);
             foreach (var item in playerInventoryItems)
             {
+
+
                 var itemMods = item.Item.GetComponent<Mods>();
                 var itemBase = GameController.Files.BaseItemTypes.Translate(item.Item.Path);
 
+                LogMessage(itemMods.Identified, 20);
+
                 if (!itemMods.Identified
-                    &&
-                    (
-                        Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && !itemBase.ClassName.Equals("Map")
-                        ||
-                        Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && !itemBase.ClassName.Equals("Map")
-                        ||
-                        Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && !itemBase.ClassName.Equals("Map")
-                        ||
-                        Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && itemBase.ClassName.Equals("Map")
-                    )
+                &&
+                (
+                    Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && !itemBase.ClassName.Equals("Map")
+                    ||
+                    Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && !itemBase.ClassName.Equals("Map")
+                    ||
+                    Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && !itemBase.ClassName.Equals("Map")
+                    ||
+                    Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && itemBase.ClassName.Equals("Map")
+                )
                 )
                 {
                     var itemPosition = item.GetClientRect().Center;
+
                     identifyItem(scrollPosition, itemPosition);
                 }
             }
