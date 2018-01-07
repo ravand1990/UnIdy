@@ -19,18 +19,20 @@ namespace UnIdy
 {
     internal class UnIdy : BaseSettingsPlugin<Settings>
     {
-        private readonly IngameState ingameState;
+        private IngameState ingameState;
         private bool isBusy;
         private Inventory playerInventory;
+        private Vector2 windowOffset = new Vector2();
 
         public UnIdy()
         {
-            ingameState = GameController.Game.IngameState;
             PluginName = "UnIdy";
         }
 
         public override void Initialise()
         {
+            ingameState = GameController.Game.IngameState;
+            windowOffset = GameController.Window.GetWindowRectangle().TopLeft;
             base.Initialise();
         }
 
@@ -38,9 +40,6 @@ namespace UnIdy
         {
             if (!Settings.Enable)
                 return;
-
-
-            debug();
 
             if (WinApi.IsKeyDown(Settings.HotKey) && !isBusy)
             {
@@ -69,9 +68,10 @@ namespace UnIdy
         {
             if (!ingameState.IngameUi.InventoryPanel.IsVisible)
             {
-                if (!Settings.openInventory) { 
-                LogMessage("Open your player inventory first!", 5);
-                return;
+                if (!Settings.openInventory)
+                {
+                    LogMessage("Open your player inventory first!", 5);
+                    return;
                 }
                 else
                 {
@@ -85,17 +85,12 @@ namespace UnIdy
 
             var prevMousePosition = Mouse.GetCursorPosition();
             var scrollPosition = getScrollsPosition();
+            Mouse.moveMouse(scrollPosition + windowOffset);
 
-
-            Mouse.moveMouse(scrollPosition);
-
-
-            Keyboard.HoldKey((byte) Keys.ShiftKey);
+            Keyboard.HoldKey((byte)Keys.ShiftKey);
             Mouse.RightUp(Settings.Speed);
             foreach (var item in playerInventoryItems)
             {
-
-
                 var itemMods = item.Item.GetComponent<Mods>();
                 var itemBase = GameController.Files.BaseItemTypes.Translate(item.Item.Path);
 
@@ -119,7 +114,7 @@ namespace UnIdy
                     identifyItem(scrollPosition, itemPosition);
                 }
             }
-            Keyboard.ReleaseKey((byte) Keys.ShiftKey);
+            Keyboard.ReleaseKey((byte)Keys.ShiftKey);
             Mouse.moveMouse(prevMousePosition);
         }
 
@@ -140,49 +135,12 @@ namespace UnIdy
 
         private void identifyItem(Vector2 scrollPosition, Vector2 itemPosition)
         {
+            scrollPosition += windowOffset;
+            itemPosition += windowOffset;
             Thread.Sleep(Mouse.DELAY_MOVE);
             Mouse.moveMouse(itemPosition);
             Mouse.LeftUp(Settings.Speed);
             Thread.Sleep(Mouse.DELAY_MOVE);
-        }
-
-        private void debug()
-        {
-            if (!Settings.Debug)
-                return;
-            var uihover = ingameState.UIHover.GetClientRect();
-
-            Graphics.DrawFrame(uihover, 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
-            Graphics.DrawFrame(ingameState.UIHover.Parent.Parent.Parent.Parent.Parent.GetClientRect(), 2, Color.Green);
-           
-            /**
-            foreach (var gameControllerEntity in GameController.Entities)
-            {
-
-                Vector3 playerPos = GameController.Player.Pos;
-                Vector3 entityPos = gameControllerEntity.Pos;
-
-                Vector2 distance = (Vector2) entityPos - (Vector2) playerPos;
-                Vector2 center = GameController.Window.GetWindowRectangle().Center;
-                Graphics.DrawText(gameControllerEntity.Path, 20, Vector2.Add(distance,center),FontDrawFlags.Center);
-            }
-
-            int i = 0;
-            foreach (var ui in ingameState.UIRoot.Children)
-            {
-                if (ui.IsVisible)
-                {
-                    Graphics.DrawFrame(ui.GetClientRect(), 2, Color.Red);
-                    Graphics.DrawText(i.ToString(), 24, ui.GetClientRect().Center);
-                }
-                i++;
-            }
-            i = 0;
-            */
         }
     }
 }
