@@ -10,39 +10,44 @@ namespace UnIdy
         {
             Enable = true;
             HotKey = Keys.F2;
-            Speed = new RangeNode<int>(20, 0, 100);
+            ExtraDelay = new RangeNode<int>(20, 0, 100);
             Identification = true;
-            Magic = true;
-            Rare = true;
-            Unique = true;
-            Map = false;
+            IdentifyMagicItems = true;
+            IdentifyRares = true;
+            IdentifyUniques = true;
+            IdentifyMaps = true;
+            IdentifyItemsWithRedGreenBlueLinks = true;
+            IdentifySixSockets = false;
+
             Debug = false;
-            openInventory = true;
         }
 
         [Menu("Hotkey")]
         public HotkeyNode HotKey { get; set; }
 
-        [Menu("Speed")]
-        public RangeNode<int> Speed { get; set; }
+        [Menu("Extra Delay", "Additional delay, plugin should work without extra delay, this is merely optional.")]
+        public RangeNode<int> ExtraDelay { get; set; }
 
         [Menu("Identify What?", 1000)]
         public ToggleNode Identification { get; set; }
 
-        [Menu("Magic", 1001, 1000)]
-        public ToggleNode Magic { get; set; }
+        [Menu("Magic items", 1001, 1000)]
+        public ToggleNode IdentifyMagicItems { get; set; }
 
-        [Menu("Rare", 1002, 1000)]
-        public ToggleNode Rare { get; set; }
+        [Menu("Rares", 1002, 1000)]
+        public ToggleNode IdentifyRares { get; set; }
 
-        [Menu("Unique", 1003, 1000)]
-        public ToggleNode Unique { get; set; }
+        [Menu("Uniques", 1003, 1000)]
+        public ToggleNode IdentifyUniques { get; set; }
 
-        [Menu("Map", 1004, 1000)]
-        public ToggleNode Map { get; set; }
+        [Menu("6-sockets", 1004, 1000)]
+        public ToggleNode IdentifySixSockets { get; set; }
 
-        [Menu("Open Inventory?")]
-        public ToggleNode openInventory { get; set; }
+        [Menu("RGB (chromatic)", 1005, 1000)]
+        public ToggleNode IdentifyItemsWithRedGreenBlueLinks { get; set; }
+
+        [Menu("Map", 1006, 1000)]
+        public ToggleNode IdentifyMaps { get; set; }
 
         [Menu("Debug")]
         public ToggleNode Debug { get; set; }

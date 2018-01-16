@@ -1,28 +1,21 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using PoeHUD.Framework;
-using PoeHUD.Framework.Helpers;
-using PoeHUD.Models;
 using PoeHUD.Models.Enums;
 using PoeHUD.Plugins;
-using PoeHUD.Poe;
 using PoeHUD.Poe.Components;
-using PoeHUD.Poe.EntityComponents;
-using PoeHUD.Poe.FilesInMemory;
+using PoeHUD.Poe.Elements;
 using PoeHUD.Poe.RemoteMemoryObjects;
 using SharpDX;
-using SharpDX.Direct3D9;
 using UnIdy.Utils;
 
 namespace UnIdy
 {
     internal class UnIdy : BaseSettingsPlugin<Settings>
     {
-        private IngameState ingameState;
-        private bool isBusy;
-        private Inventory playerInventory;
-        private Vector2 windowOffset = new Vector2();
+        private IngameState _ingameState;
+        private Vector2 _windowOffset;
 
         public UnIdy()
         {
@@ -31,116 +24,136 @@ namespace UnIdy
 
         public override void Initialise()
         {
-            ingameState = GameController.Game.IngameState;
-            windowOffset = GameController.Window.GetWindowRectangle().TopLeft;
             base.Initialise();
+
+            _ingameState = GameController.Game.IngameState;
+            _windowOffset = GameController.Window.GetWindowRectangle().TopLeft;
         }
 
         public override void Render()
         {
-            if (!Settings.Enable)
+            base.Render();
+
+            var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
+            if (!inventoryPanel.IsVisible)
+            {
                 return;
-
-            if (WinApi.IsKeyDown(Settings.HotKey) && !isBusy)
-            {
-                isBusy = true;
-                scanInventory();
-                isBusy = false;
-            }
-        }
-
-        public override void EntityAdded(EntityWrapper entityWrapper)
-        {
-            base.EntityAdded(entityWrapper);
-        }
-
-        public override void EntityRemoved(EntityWrapper entityWrapper)
-        {
-            base.EntityRemoved(entityWrapper);
-        }
-
-        public override void OnClose()
-        {
-            base.OnClose();
-        }
-
-        private void scanInventory()
-        {
-            if (!ingameState.IngameUi.InventoryPanel.IsVisible)
-            {
-                if (!Settings.openInventory)
-                {
-                    LogMessage("Open your player inventory first!", 5);
-                    return;
-                }
-                else
-                {
-                    Keyboard.PressKey((byte)Keys.I);
-                    Thread.Sleep(Mouse.DELAY_CLICK);
-                }
             }
 
-            playerInventory = ingameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory];
-            var playerInventoryItems = playerInventory.VisibleInventoryItems;
-
-            var prevMousePosition = Mouse.GetCursorPosition();
-            var scrollPosition = getScrollsPosition();
-            Mouse.moveMouse(scrollPosition + windowOffset);
-
-            Keyboard.HoldKey((byte)Keys.ShiftKey);
-            Mouse.RightUp(Settings.Speed);
-            foreach (var item in playerInventoryItems)
+            if (!Keyboard.IsKeyToggled(Settings.HotKey.Value))
             {
-                var itemMods = item.Item.GetComponent<Mods>();
-                var itemBase = GameController.Files.BaseItemTypes.Translate(item.Item.Path);
-
-                LogMessage(itemMods.Identified, 20);
-
-                if (!itemMods.Identified
-                &&
-                (
-                    Settings.Rare && itemMods.ItemRarity == ItemRarity.Rare && !itemBase.ClassName.Equals("Map")
-                    ||
-                    Settings.Magic && itemMods.ItemRarity == ItemRarity.Magic && !itemBase.ClassName.Equals("Map")
-                    ||
-                    Settings.Unique && itemMods.ItemRarity == ItemRarity.Unique && !itemBase.ClassName.Equals("Map")
-                    ||
-                    Settings.Map && itemMods.ItemRarity != ItemRarity.Normal && itemBase.ClassName.Equals("Map")
-                )
-                )
-                {
-                    var itemPosition = item.GetClientRect().Center;
-
-                    identifyItem(scrollPosition, itemPosition);
-                }
+                return;
             }
-            Keyboard.ReleaseKey((byte)Keys.ShiftKey);
-            Mouse.moveMouse(prevMousePosition);
+
+            DrawPluginImageAndText();
+
+            Unindentify();
         }
 
-        private Vector2 getScrollsPosition()
+        private void DrawPluginImageAndText()
         {
-            playerInventory = ingameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory];
-            var playerInventoryItems = playerInventory.VisibleInventoryItems;
-            foreach (var item in playerInventoryItems)
-            {
-                var itemBase = item.Item.GetComponent<Base>();
-                if (itemBase.Name.Equals("Scroll of Wisdom"))
-                {
-                    return item.GetClientRect().Center;
-                }
-            }
-            return new Vector2(0, 0);
+            var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
+            var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
+            var pos = playerInventory.InventoryUiElement.GetClientRect().TopLeft;
+            pos.Y -= 100;
+            const int height = 35;
+            const int width = 169;
+            var rec = new RectangleF(pos.X, pos.Y, width, height);
+            pos.Y += height;
+            Graphics.DrawPluginImage($"{PluginDirectory}//img//logo.png", rec);
+            Graphics.DrawText($"Is running\nPress {Settings.HotKey.Value} to stop.", 20, pos);
         }
 
-        private void identifyItem(Vector2 scrollPosition, Vector2 itemPosition)
+        private void Unindentify()
         {
-            scrollPosition += windowOffset;
-            itemPosition += windowOffset;
-            Thread.Sleep(Mouse.DELAY_MOVE);
-            Mouse.moveMouse(itemPosition);
-            Mouse.LeftUp(Settings.Speed);
-            Thread.Sleep(Mouse.DELAY_MOVE);
+            var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
+            var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
+
+            var scrollOfWisdom = GetItemWithBaseName("Scroll of Wisdom", playerInventory.VisibleInventoryItems);
+            if (scrollOfWisdom == null)
+            {
+                return;
+            }
+            var normalInventoryItems = playerInventory.VisibleInventoryItems;
+            var latency = (int) _ingameState.CurLatency;
+            var listOfNormalInventoryItemsToIdentify = new List<NormalInventoryItem>();
+            foreach (var normalInventoryItem in normalInventoryItems)
+            {
+                var mods = normalInventoryItem.Item.GetComponent<Mods>();
+                if (mods.Identified)
+                {
+                    continue;
+                }
+
+                switch (mods.ItemRarity)
+                {
+                    case ItemRarity.Unique when !Settings.IdentifyUniques.Value:
+                        continue;
+                    case ItemRarity.Rare when !Settings.IdentifyRares.Value:
+                        continue;
+                    case ItemRarity.Magic when !Settings.IdentifyMagicItems.Value:
+                        continue;
+                    case ItemRarity.Normal:
+                        continue;
+                    default:
+                        break;
+                }
+
+                var sockets = normalInventoryItem.Item.GetComponent<Sockets>();
+                if (!Settings.IdentifySixSockets.Value && sockets.NumberOfSockets == 6)
+                {
+                    continue;
+                }
+
+                if (!Settings.IdentifyItemsWithRedGreenBlueLinks.Value && sockets.IsRGB)
+                {
+                    continue;
+                }
+
+                var itemIsMap = normalInventoryItem.Item.HasComponent<PoeHUD.Poe.Components.Map>();
+                if (!Settings.IdentifyMaps.Value && itemIsMap)
+                {
+                    continue;
+                }
+
+                listOfNormalInventoryItemsToIdentify.Add(normalInventoryItem);
+            }
+
+            if (listOfNormalInventoryItemsToIdentify.Count == 0)
+            {
+                return;
+            }
+
+            Mouse.SetCursorPosAndRightClick(scrollOfWisdom.GetClientRect().Center, Settings.ExtraDelay, _windowOffset);
+            Thread.Sleep(latency);
+            Keyboard.KeyDown(Keys.LShiftKey);
+            foreach (var normalInventoryItem in listOfNormalInventoryItemsToIdentify)
+            {
+                if (Settings.Debug.Value)
+                {
+                    Graphics.DrawFrame(normalInventoryItem.GetClientRect(), 2, Color.AliceBlue);
+                }
+
+                Mouse.SetCursorPosAndLeftClick(normalInventoryItem.GetClientRect().Center, Settings.ExtraDelay.Value, _windowOffset);
+                Thread.Sleep(Constants.WHILE_DELAY + Settings.ExtraDelay.Value);
+            }
+            Keyboard.KeyUp(Keys.LShiftKey);
+
+        }
+
+        private NormalInventoryItem GetItemWithBaseName(string baseName,
+            IEnumerable<NormalInventoryItem> normalInventoryItems)
+        {
+            try
+            {
+                return normalInventoryItems.First(normalInventoryItem =>
+                    GameController.Files.BaseItemTypes.Translate(normalInventoryItem.Item.Path).BaseName
+                        .Equals(baseName));
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

@@ -6,67 +6,142 @@ namespace UnIdy.Utils
 {
     internal class Mouse
     {
-        public const int DELAY_MOVE = 20;
-        public const int DELAY_CLICK = 5;
-
         [DllImport("user32.dll")]
         public static extern bool SetCursorPos(int x, int y);
 
         [DllImport("user32.dll")]
-        public static extern bool GetCursorPos(out Point lpPoint);
+        private static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
+
+        public const int MOUSEEVENTF_LEFTDOWN = 0x02;
+        public const int MOUSEEVENTF_LEFTUP = 0x04;
+
+        public const int MOUSEEVENTF_MIDDOWN = 0x0020;
+        public const int MOUSEEVENTF_MIDUP = 0x0040;
+
+        public const int MOUSEEVENTF_RIGHTDOWN = 0x0008;
+        public const int MOUSEEVENTF_RIGHTUP = 0x0010;
+        public const int MOUSE_EVENT_WHEEL = 0x800;
+
+        // 
+        private const int MOVEMENT_DELAY = 10;
+
+        private const int CLICK_DELAY = 1;
+
+
+        /// <summary>
+        /// Sets the cursor position relative to the game window.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="gameWindow"></param>
+        /// <returns></returns>
+        public static bool SetCursorPos(int x, int y, RectangleF gameWindow)
+        {
+            return SetCursorPos(x + (int) gameWindow.X, y + (int) gameWindow.Y);
+        }
+
+        /// <summary>
+        /// Sets the cursor position to the center of a given rectangle relative to the game window
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="gameWindow"></param>
+        /// <returns></returns>
+        public static bool SetCurosPosToCenterOfRec(RectangleF position, RectangleF gameWindow)
+        {
+            return SetCursorPos((int) (gameWindow.X + position.Center.X),
+                (int) (gameWindow.Y + position.Center.Y));
+        }
+        ////////////////////////////////////////////////////////////
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT
+        {
+            public int X;
+            public int Y;
+
+            public static implicit operator Point(POINT point)
+            {
+                return new Point(point.X, point.Y);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the cursor's position, in screen coordinates.
+        /// </summary>
+        /// <see>See MSDN documentation for further information.</see>
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorPos(out POINT lpPoint);
 
         public static Point GetCursorPosition()
         {
-            Point lpPoint;
+            POINT lpPoint;
             GetCursorPos(out lpPoint);
-
             return lpPoint;
         }
 
-        [DllImport("user32.dll")]
-        private static extern void mouse_event(int dwFlags, int dx, int dy, int cButtons, int dwExtraInfo);
-
-        public enum MouseEvents
+        public static void LeftMouseDown()
         {
-            LeftDown = 0x00000002,
-            LeftUp = 0x00000004,
-            MiddleDown = 0x00000020,
-            MiddleUp = 0x00000040,
-            Move = 0x00000001,
-            Absolute = 0x00008000,
-            RightDown = 0x00000008,
-            RightUp = 0x00000010
+            mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
         }
 
-
-        public static void moveMouse(Vector2 pos)
+        public static void LeftMouseUp()
         {
-            SetCursorPos((int) pos.X, (int) pos.Y);
-            Thread.Sleep(DELAY_MOVE);
+            mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
         }
 
-        public static void LeftDown(int delay)
+        public static void RightMouseDown()
         {
-            mouse_event((int) MouseEvents.LeftDown, 0, 0, 0, 0);
-            Thread.Sleep(DELAY_CLICK + delay);
+            mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0);
         }
 
-        public static void LeftUp(int delay)
+        public static void RightMouseUp()
         {
-            mouse_event((int) MouseEvents.LeftUp, 0, 0, 0, 0);
-            Thread.Sleep(DELAY_CLICK + delay);
+            mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0);
         }
 
-        public static void RightDown(int delay)
+        public static void SetCursorPosAndLeftClick(Vector2 pos, int extraDelay, Vector2 offset)
         {
-            mouse_event((int) MouseEvents.RightDown, 0, 0, 0, 0);
-            Thread.Sleep(DELAY_CLICK + delay);
+            var posX = (int) (pos.X + offset.X);
+            var posY = (int) (pos.Y + offset.Y);
+            SetCursorPos(posX, posY);
+            Thread.Sleep(MOVEMENT_DELAY + extraDelay);
+            LeftClick();
         }
 
-        public static void RightUp(int delay)
+        public static void SetCursorPosAndRightClick(Vector2 pos, int extraDelay, Vector2 offset)
         {
-            mouse_event((int) MouseEvents.RightUp, 0, 0, 0, 0);
-            Thread.Sleep(DELAY_CLICK + delay);
+            var posX = (int) (pos.X + offset.X);
+            var posY = (int) (pos.Y + offset.Y);
+            SetCursorPos(posX, posY);
+            Thread.Sleep(MOVEMENT_DELAY + extraDelay);
+            RightClick();
+        }
+
+        public static void VerticalScroll(bool forward, int clicks)
+        {
+            if (forward)
+            {
+                mouse_event(MOUSE_EVENT_WHEEL, 0, 0, clicks * 120, 0);
+            }
+            else
+            {
+                mouse_event(MOUSE_EVENT_WHEEL, 0, 0, -(clicks * 120), 0);
+            }
+        }
+
+        public static void LeftClick()
+        {
+            LeftMouseDown();
+            Thread.Sleep(CLICK_DELAY);
+            LeftMouseUp();
+        }
+
+        public static void RightClick()
+        {
+            RightMouseDown();
+            Thread.Sleep(CLICK_DELAY);
+            RightMouseUp();
         }
     }
 }
