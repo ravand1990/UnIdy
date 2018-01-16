@@ -18,12 +18,15 @@ namespace UnIdy
             IdentifyMaps = true;
             IdentifyItemsWithRedGreenBlueLinks = true;
             IdentifySixSockets = false;
-
+            IdentifyVisibleTabItems = true;
             Debug = false;
         }
 
         [Menu("Hotkey")]
         public HotkeyNode HotKey { get; set; }
+
+        [Menu("Identify visible stashtab items")]
+        public ToggleNode IdentifyVisibleTabItems { get; set; }
 
         [Menu("Extra Delay", "Additional delay, plugin should work without extra delay, this is merely optional.")]
         public RangeNode<int> ExtraDelay { get; set; }

@@ -48,7 +48,7 @@ namespace UnIdy
 
             //DrawPluginImageAndText();      
 
-            Unindentify();
+            Identify();
         }
 
         private void DrawPluginImageAndText()
@@ -65,7 +65,7 @@ namespace UnIdy
             Graphics.DrawText($"Is running\nPress {Settings.HotKey.Value} to stop.", 20, pos);
         }
 
-        private void Unindentify()
+        private void Identify()
         {
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
             var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
@@ -78,6 +78,12 @@ namespace UnIdy
             }
 
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
+
+            if (Settings.IdentifyVisibleTabItems.Value && _ingameState.ServerData.StashPanel.IsVisible)
+            {
+                normalInventoryItems.AddRange(_ingameState.ServerData.StashPanel.VisibleStash.VisibleInventoryItems);
+            }
+
             var latency = (int) _ingameState.CurLatency;
             var listOfNormalInventoryItemsToIdentify = new List<NormalInventoryItem>();
             foreach (var normalInventoryItem in normalInventoryItems)
