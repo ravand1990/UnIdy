@@ -35,8 +35,9 @@ namespace UnIdy
             base.Render();
 
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
-            if (!inventoryPanel.IsVisible)
+            if (!inventoryPanel.IsVisible && Keyboard.IsKeyToggled(Settings.HotKey.Value))
             {
+                Keyboard.KeyPress(Settings.HotKey.Value);
                 return;
             }
 
@@ -45,7 +46,7 @@ namespace UnIdy
                 return;
             }
 
-            DrawPluginImageAndText();
+            //DrawPluginImageAndText();      
 
             Unindentify();
         }
@@ -72,8 +73,10 @@ namespace UnIdy
             var scrollOfWisdom = GetItemWithBaseName("Scroll of Wisdom", playerInventory.VisibleInventoryItems);
             if (scrollOfWisdom == null)
             {
+                Keyboard.KeyPress(Settings.HotKey.Value);
                 return;
             }
+
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
             var latency = (int) _ingameState.CurLatency;
             var listOfNormalInventoryItemsToIdentify = new List<NormalInventoryItem>();
@@ -121,6 +124,7 @@ namespace UnIdy
 
             if (listOfNormalInventoryItemsToIdentify.Count == 0)
             {
+                Keyboard.KeyPress(Settings.HotKey.Value);
                 return;
             }
 
