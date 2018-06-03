@@ -33,23 +33,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="poehud">
-      <HintPath>..\..\..\..\..\..\PoEHUD\Release\lib\PoeHUD.exe</HintPath>
+      <HintPath>..\..\..\..\poehud.exe</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>..\..\..\..\..\..\PoEHUD\Release\SharpDX.dll</HintPath>
+      <HintPath>..\..\..\..\SharpDX.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Desktop">
-      <HintPath>..\..\..\..\..\..\PoEHUD\Release\SharpDX.Desktop.dll</HintPath>
+      <HintPath>..\..\..\..\SharpDX.Desktop.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
-      <HintPath>..\..\..\..\..\..\PoEHUD\Release\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>..\..\..\..\SharpDX.Direct3D9.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SharpDX.Mathematics">
-      <HintPath>..\..\..\..\..\..\PoEHUD\Release\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>..\..\..\..\SharpDX.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

@@ -71,6 +71,7 @@ namespace UnIdy
             var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
 
             var scrollOfWisdom = GetItemWithBaseName("Scroll of Wisdom", playerInventory.VisibleInventoryItems);
+            LogMessage(scrollOfWisdom.Text,1);
             if (scrollOfWisdom == null)
             {
                 Keyboard.KeyPress(Settings.HotKey.Value);
@@ -156,9 +157,14 @@ namespace UnIdy
         {
             try
             {
+                /* //Waiting for fix
                 return normalInventoryItems.First(normalInventoryItem =>
                     GameController.Files.BaseItemTypes.Translate(normalInventoryItem.Item.Path).BaseName
                         .Equals(baseName));
+                */
+
+                //Temporary fix
+                return normalInventoryItems.First(normalInventoryItem => normalInventoryItem.Item.Path.Contains("Identification"));
             }
             catch
             {
