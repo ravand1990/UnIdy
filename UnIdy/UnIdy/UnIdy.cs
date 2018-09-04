@@ -80,10 +80,11 @@ namespace UnIdy
 
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
 
+            /*
             if (Settings.IdentifyVisibleTabItems.Value && _ingameState.ServerData.StashPanel.IsVisible)
             {
                 normalInventoryItems.AddRange(_ingameState.ServerData.StashPanel.VisibleStash.VisibleInventoryItems);
-            }
+            }*/
 
             var latency = (int) _ingameState.CurLatency;
             var listOfNormalInventoryItemsToIdentify = new List<NormalInventoryItem>();
