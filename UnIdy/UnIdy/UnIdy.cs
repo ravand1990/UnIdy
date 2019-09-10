@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Exile;
-using Exile.PoEMemory.MemoryObjects;
 using PoEMemory;
 using PoEMemory.Components;
 using PoEMemory.InventoryElements;

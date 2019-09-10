@@ -16,7 +16,7 @@ namespace UnIdy
             IdentifyMagicItems = new ToggleNode(true);
             IdentifyRares = new ToggleNode(true);
             IdentifyUniques = new ToggleNode(true);
-            IdentifyMaps = new ToggleNode(true);
+            IdentifyMaps = new ToggleNode(false);
             IdentifyItemsWithRedGreenBlueLinks = new ToggleNode(true);
             IdentifySixSockets = new ToggleNode(true);
             IdentifyVisibleTabItems = new ToggleNode(true);
