@@ -2,32 +2,34 @@
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using PoeHUD.Models.Enums;
-using PoeHUD.Plugins;
-using PoeHUD.Poe.Components;
-using PoeHUD.Poe.Elements;
-using PoeHUD.Poe.RemoteMemoryObjects;
+using Exile;
+using Exile.PoEMemory.MemoryObjects;
+using PoEMemory;
+using PoEMemory.Components;
+using PoEMemory.InventoryElements;
+using Shared.Enums;
 using SharpDX;
 using UnIdy.Utils;
 
 namespace UnIdy
 {
-    internal class UnIdy : BaseSettingsPlugin<Settings>
+    public class UnIdy : BaseSettingsPlugin<Settings>
     {
         private IngameState _ingameState;
         private Vector2 _windowOffset;
 
         public UnIdy()
         {
-            PluginName = "UnIdy";
         }
 
-        public override void Initialise()
+        public override bool Initialise()
         {
             base.Initialise();
+            Name = "UnIdy";
 
             _ingameState = GameController.Game.IngameState;
             _windowOffset = GameController.Window.GetWindowRectangle().TopLeft;
+            return true;
         }
 
         public override void Render()
@@ -51,6 +53,7 @@ namespace UnIdy
             Identify();
         }
 
+        /*
         private void DrawPluginImageAndText()
         {
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
@@ -64,6 +67,7 @@ namespace UnIdy
             Graphics.DrawPluginImage($"{PluginDirectory}//img//logo.png", rec);
             Graphics.DrawText($"Is running\nPress {Settings.HotKey.Value} to stop.", 20, pos);
         }
+        */
 
         private void Identify()
         {
@@ -71,63 +75,74 @@ namespace UnIdy
             var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
 
             var scrollOfWisdom = GetItemWithBaseName("Scroll of Wisdom", playerInventory.VisibleInventoryItems);
-            LogMessage(scrollOfWisdom.Text,1);
+            LogMessage(scrollOfWisdom.Text, 1);
+
             if (scrollOfWisdom == null)
             {
                 Keyboard.KeyPress(Settings.HotKey.Value);
                 return;
             }
 
+
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
 
-            /*
-            if (Settings.IdentifyVisibleTabItems.Value && _ingameState.ServerData.StashPanel.IsVisible)
-            {
-                normalInventoryItems.AddRange(_ingameState.ServerData.StashPanel.VisibleStash.VisibleInventoryItems);
-            }*/
 
-            var latency = (int) _ingameState.CurLatency;
+            if (Settings.IdentifyVisibleTabItems.Value && _ingameState.IngameUi.StashElement.IsVisible)
+            {
+                foreach (var normalStashItem in _ingameState.IngameUi.StashElement.VisibleStash.VisibleInventoryItems)
+                {
+                    normalInventoryItems.Insert(normalInventoryItems.Count,normalStashItem);
+                }
+            }
+
+            var latency = (int)_ingameState.CurLatency;
             var listOfNormalInventoryItemsToIdentify = new List<NormalInventoryItem>();
+
             foreach (var normalInventoryItem in normalInventoryItems)
             {
-                var mods = normalInventoryItem.Item.GetComponent<Mods>();
-                if (mods.Identified)
+                if (normalInventoryItem.Item.HasComponent<Mods>())
                 {
-                    continue;
-                }
+                    var mods = normalInventoryItem.Item.GetComponent<Mods>();
 
-                switch (mods.ItemRarity)
-                {
-                    case ItemRarity.Unique when !Settings.IdentifyUniques.Value:
+                    if (mods.Identified)
+                    {
                         continue;
-                    case ItemRarity.Rare when !Settings.IdentifyRares.Value:
+                    }
+
+                    switch (mods.ItemRarity)
+                    {
+                        case ItemRarity.Unique when !Settings.IdentifyUniques.Value:
+                            continue;
+                        case ItemRarity.Rare when !Settings.IdentifyRares.Value:
+                            continue;
+                        case ItemRarity.Magic when !Settings.IdentifyMagicItems.Value:
+                            continue;
+                        case ItemRarity.Normal:
+                            continue;
+                        default:
+                            break;
+                    }
+
+                    var sockets = normalInventoryItem.Item.GetComponent<Sockets>();
+                    if (!Settings.IdentifySixSockets.Value && sockets.NumberOfSockets == 6)
+                    {
                         continue;
-                    case ItemRarity.Magic when !Settings.IdentifyMagicItems.Value:
+                    }
+
+                    if (!Settings.IdentifyItemsWithRedGreenBlueLinks.Value && sockets.IsRGB)
+                    {
                         continue;
-                    case ItemRarity.Normal:
+                    }
+
+                    var itemIsMap = normalInventoryItem.Item.HasComponent<PoEMemory.Components.Map>();
+                    if (!Settings.IdentifyMaps.Value && itemIsMap)
+                    {
                         continue;
-                    default:
-                        break;
-                }
+                    }
 
-                var sockets = normalInventoryItem.Item.GetComponent<Sockets>();
-                if (!Settings.IdentifySixSockets.Value && sockets.NumberOfSockets == 6)
-                {
-                    continue;
-                }
+                    listOfNormalInventoryItemsToIdentify.Add(normalInventoryItem);
 
-                if (!Settings.IdentifyItemsWithRedGreenBlueLinks.Value && sockets.IsRGB)
-                {
-                    continue;
                 }
-
-                var itemIsMap = normalInventoryItem.Item.HasComponent<PoeHUD.Poe.Components.Map>();
-                if (!Settings.IdentifyMaps.Value && itemIsMap)
-                {
-                    continue;
-                }
-
-                listOfNormalInventoryItemsToIdentify.Add(normalInventoryItem);
             }
 
             if (listOfNormalInventoryItemsToIdentify.Count == 0)
@@ -143,7 +158,7 @@ namespace UnIdy
             {
                 if (Settings.Debug.Value)
                 {
-                    Graphics.DrawFrame(normalInventoryItem.GetClientRect(), 2, Color.AliceBlue);
+                    //Graphics.DrawFrame(normalInventoryItem.GetClientRect(), 2, Color.AliceBlue);
                 }
 
                 Mouse.SetCursorPosAndLeftClick(normalInventoryItem.GetClientRect().Center, Settings.ExtraDelay.Value, _windowOffset);
@@ -158,14 +173,15 @@ namespace UnIdy
         {
             try
             {
-                /* //Waiting for fix
+
                 return normalInventoryItems.First(normalInventoryItem =>
                     GameController.Files.BaseItemTypes.Translate(normalInventoryItem.Item.Path).BaseName
                         .Equals(baseName));
-                */
 
-                //Temporary fix
+
+                /*OLD Temporary fix, might need this sometime again
                 return normalInventoryItems.First(normalInventoryItem => normalInventoryItem.Item.Path.Contains("Identification"));
+                */
             }
             catch
             {

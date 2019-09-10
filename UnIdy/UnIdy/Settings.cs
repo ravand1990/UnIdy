@@ -1,26 +1,30 @@
 ﻿using System.Windows.Forms;
-using PoeHUD.Hud.Settings;
-using PoeHUD.Plugins;
+using Shared.Attributes;
+using Shared.Interfaces;
+using Shared.Nodes;
 
 namespace UnIdy
 {
-    internal class Settings : SettingsBase
+    public class Settings : ISettings
     {
         public Settings()
         {
-            Enable = true;
-            HotKey = Keys.F2;
+            Enable = new ToggleNode(true);
+            HotKey = new HotkeyNode(Keys.F2);
             ExtraDelay = new RangeNode<int>(20, 0, 100);
-            Identification = true;
-            IdentifyMagicItems = true;
-            IdentifyRares = true;
-            IdentifyUniques = true;
-            IdentifyMaps = true;
-            IdentifyItemsWithRedGreenBlueLinks = true;
-            IdentifySixSockets = false;
-            IdentifyVisibleTabItems = true;
-            Debug = false;
+            Identification = new ToggleNode(true);
+            IdentifyMagicItems = new ToggleNode(true);
+            IdentifyRares = new ToggleNode(true);
+            IdentifyUniques = new ToggleNode(true);
+            IdentifyMaps = new ToggleNode(true);
+            IdentifyItemsWithRedGreenBlueLinks = new ToggleNode(true);
+            IdentifySixSockets = new ToggleNode(true);
+            IdentifyVisibleTabItems = new ToggleNode(true);
+            Debug = new ToggleNode(true);
         }
+
+        [Menu("Enable")]
+        public ToggleNode Enable { get; set; }
 
         [Menu("Hotkey")]
         public HotkeyNode HotKey { get; set; }
