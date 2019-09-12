@@ -2,11 +2,11 @@
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Exile;
-using PoEMemory;
-using PoEMemory.Components;
-using PoEMemory.InventoryElements;
-using Shared.Enums;
+using ExileCore;
+using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.Elements.InventoryElements;
+using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared.Enums;
 using SharpDX;
 using UnIdy.Utils;
 
@@ -133,7 +133,7 @@ namespace UnIdy
                         continue;
                     }
 
-                    var itemIsMap = normalInventoryItem.Item.HasComponent<PoEMemory.Components.Map>();
+                    var itemIsMap = normalInventoryItem.Item.HasComponent<Map>();
                     if (!Settings.IdentifyMaps.Value && itemIsMap)
                     {
                         continue;
