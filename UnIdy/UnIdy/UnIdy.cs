@@ -164,6 +164,9 @@ namespace UnIdy
                 Thread.Sleep(Constants.WHILE_DELAY + Settings.ExtraDelay.Value);
             }
             Keyboard.KeyUp(Keys.LShiftKey);
+            
+            Keyboard.KeyPress(Settings.HotKey.Value);
+            return;
 
         }
 
