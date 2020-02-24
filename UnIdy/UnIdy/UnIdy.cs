@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -6,9 +7,9 @@ using ExileCore;
 using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using SharpDX;
-using UnIdy.Utils;
 
 namespace UnIdy
 {
@@ -16,6 +17,8 @@ namespace UnIdy
     {
         private IngameState _ingameState;
         private Vector2 _windowOffset;
+        private Coroutine CoroutineWorker;
+        private const string coroutineName = "UnIdy";
 
         public UnIdy()
         {
@@ -28,6 +31,12 @@ namespace UnIdy
 
             _ingameState = GameController.Game.IngameState;
             _windowOffset = GameController.Window.GetWindowRectangle().TopLeft;
+
+            Input.RegisterKey(Settings.HotKey.Value);
+            Input.RegisterKey(Keys.LShiftKey);
+
+            Settings.HotKey.OnValueChanged += () => { Input.RegisterKey(Settings.HotKey.Value); };
+
             return true;
         }
 
@@ -36,20 +45,15 @@ namespace UnIdy
             base.Render();
 
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
-            if (!inventoryPanel.IsVisible && Keyboard.IsKeyToggled(Settings.HotKey.Value))
-            {
-                Keyboard.KeyPress(Settings.HotKey.Value);
+
+            if (!inventoryPanel.IsVisible)
                 return;
-            }
 
-            if (!Keyboard.IsKeyToggled(Settings.HotKey.Value))
+            if (Settings.HotKey.PressedOnce())
             {
-                return;
+                CoroutineWorker = new Coroutine(Identify(), this, coroutineName);
+                Core.ParallelRunner.Run(CoroutineWorker);
             }
-
-            //DrawPluginImageAndText();      
-
-            Identify();
         }
 
         /*
@@ -68,7 +72,7 @@ namespace UnIdy
         }
         */
 
-        private void Identify()
+        private IEnumerator Identify()
         {
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
             var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
@@ -77,14 +81,9 @@ namespace UnIdy
             LogMessage(scrollOfWisdom.Text, 1);
 
             if (scrollOfWisdom == null)
-            {
-                Keyboard.KeyPress(Settings.HotKey.Value);
-                return;
-            }
-
+                yield break;
 
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
-
 
             if (Settings.IdentifyVisibleTabItems.Value && _ingameState.IngameUi.StashElement.IsVisible)
             {
@@ -145,14 +144,21 @@ namespace UnIdy
             }
 
             if (listOfNormalInventoryItemsToIdentify.Count == 0)
-            {
-                Keyboard.KeyPress(Settings.HotKey.Value);
-                return;
-            }
+                yield break;
 
-            Mouse.SetCursorPosAndRightClick(scrollOfWisdom.GetClientRect().Center, Settings.ExtraDelay, _windowOffset);
-            Thread.Sleep(latency);
-            Keyboard.KeyDown(Keys.LShiftKey);
+            #region Mouse click
+
+            yield return Input.SetCursorPositionSmooth(scrollOfWisdom.GetClientRect().Center + _windowOffset);
+
+            yield return new WaitTime(Settings.ExtraDelay.Value / 2);
+
+            Input.Click(MouseButtons.Right);
+
+            #endregion
+
+            yield return new WaitTime(latency);
+
+            Input.KeyDown(Keys.LShiftKey);
             foreach (var normalInventoryItem in listOfNormalInventoryItemsToIdentify)
             {
                 if (Settings.Debug.Value)
@@ -160,14 +166,21 @@ namespace UnIdy
                     //Graphics.DrawFrame(normalInventoryItem.GetClientRect(), 2, Color.AliceBlue);
                 }
 
-                Mouse.SetCursorPosAndLeftClick(normalInventoryItem.GetClientRect().Center, Settings.ExtraDelay.Value, _windowOffset);
-                Thread.Sleep(Constants.WHILE_DELAY + Settings.ExtraDelay.Value);
-            }
-            Keyboard.KeyUp(Keys.LShiftKey);
-            
-            Keyboard.KeyPress(Settings.HotKey.Value);
-            return;
+                #region Mouse click
 
+                yield return Input.SetCursorPositionSmooth(normalInventoryItem.GetClientRect().Center + _windowOffset);
+
+                yield return new WaitTime(Settings.ExtraDelay.Value / 2);
+
+                Input.Click(MouseButtons.Left);
+
+                yield return new WaitTime(Settings.ExtraDelay.Value);
+
+                #endregion
+            }
+            Input.KeyUp(Keys.LShiftKey);
+
+            yield break;
         }
 
         private NormalInventoryItem GetItemWithBaseName(string baseName,
