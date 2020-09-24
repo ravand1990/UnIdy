@@ -1,9 +1,0 @@
-Owner: ravand1990
-Name: UnIdy
-Repository
-
-Ignore:
-UnIdy
-.gitignore
-.gitattributes
-README.md
