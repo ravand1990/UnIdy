@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -36,55 +37,24 @@ namespace UnIdy
             base.Render();
 
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
-            if (!inventoryPanel.IsVisible && Keyboard.IsKeyToggled(Settings.HotKey.Value))
+            if (inventoryPanel.IsVisible &&
+                Keyboard.IsKeyPressed(Settings.HotKey))
             {
-                Keyboard.KeyPress(Settings.HotKey.Value);
-                return;
+                Identify();
             }
-
-            if (!Keyboard.IsKeyToggled(Settings.HotKey.Value))
-            {
-                return;
-            }
-
-            //DrawPluginImageAndText();      
-
-            Identify();
         }
-
-        /*
-        private void DrawPluginImageAndText()
-        {
-            var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
-            var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
-            var pos = playerInventory.InventoryUiElement.GetClientRect().TopLeft;
-            pos.Y -= 100;
-            const int height = 35;
-            const int width = 169;
-            var rec = new RectangleF(pos.X, pos.Y, width, height);
-            pos.Y += height;
-            Graphics.DrawPluginImage($"{PluginDirectory}//img//logo.png", rec);
-            Graphics.DrawText($"Is running\nPress {Settings.HotKey.Value} to stop.", 20, pos);
-        }
-        */
 
         private void Identify()
         {
             var inventoryPanel = _ingameState.IngameUi.InventoryPanel;
             var playerInventory = inventoryPanel[InventoryIndex.PlayerInventory];
 
-            var scrollOfWisdom = GetItemWithBaseName("Scroll of Wisdom", playerInventory.VisibleInventoryItems);
+            var scrollOfWisdom = GetItemWithBaseName(
+                "Metadata/Items/Currency/CurrencyIdentification",
+                playerInventory.VisibleInventoryItems);
             LogMessage(scrollOfWisdom.Text, 1);
 
-            if (scrollOfWisdom == null)
-            {
-                Keyboard.KeyPress(Settings.HotKey.Value);
-                return;
-            }
-
-
             var normalInventoryItems = playerInventory.VisibleInventoryItems;
-
 
             if (Settings.IdentifyVisibleTabItems.Value && _ingameState.IngameUi.StashElement.IsVisible)
             {
@@ -128,11 +98,6 @@ namespace UnIdy
                         continue;
                     }
 
-                    if (!Settings.IdentifyItemsWithRedGreenBlueLinks.Value && sockets.IsRGB)
-                    {
-                        continue;
-                    }
-
                     var itemIsMap = normalInventoryItem.Item.HasComponent<Map>();
                     if (!Settings.IdentifyMaps.Value && itemIsMap)
                     {
@@ -157,7 +122,7 @@ namespace UnIdy
             {
                 if (Settings.Debug.Value)
                 {
-                    //Graphics.DrawFrame(normalInventoryItem.GetClientRect(), 2, Color.AliceBlue);
+                    Graphics.DrawFrame(normalInventoryItem.GetClientRect(), Color.AliceBlue, 2);
                 }
 
                 Mouse.SetCursorPosAndLeftClick(normalInventoryItem.GetClientRect().Center, Settings.ExtraDelay.Value, _windowOffset);
@@ -167,20 +132,15 @@ namespace UnIdy
 
         }
 
-        private NormalInventoryItem GetItemWithBaseName(string baseName,
+        private NormalInventoryItem GetItemWithBaseName(string path,
             IEnumerable<NormalInventoryItem> normalInventoryItems)
         {
+            var inventoryItems = normalInventoryItems as NormalInventoryItem[] ?? normalInventoryItems.ToArray();
             try
             {
-
-                return normalInventoryItems.First(normalInventoryItem =>
-                    GameController.Files.BaseItemTypes.Translate(normalInventoryItem.Item.Path).BaseName
-                        .Equals(baseName));
-
-
-                /*OLD Temporary fix, might need this sometime again
-                return normalInventoryItems.First(normalInventoryItem => normalInventoryItem.Item.Path.Contains("Identification"));
-                */
+                return inventoryItems
+                    .First(normalInventoryItem =>
+                        normalInventoryItem.Item.Path == path);
             }
             catch
             {
