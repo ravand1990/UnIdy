@@ -93,7 +93,7 @@ namespace UnIdy
                     }
 
                     var sockets = normalInventoryItem.Item.GetComponent<Sockets>();
-                    if (!Settings.IdentifySixSockets.Value && sockets.NumberOfSockets == 6)
+                    if (!Settings.IdentifySixSockets.Value && sockets?.NumberOfSockets == 6)
                     {
                         continue;
                     }
